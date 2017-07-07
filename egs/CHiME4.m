@@ -117,7 +117,7 @@ for setInd = setIndBegin:setIndEnd
             yGscFt= GSC(ftbin, targetY);
             yGsc = ISTFT(yGscFt, Lwindow, overlap);
             yGsc = yGsc / max(abs(yGsc));
-            wavwrite(yGsc, 16000, 16, [Path.enhGsc sem '/' uname '.wav']);                 
+            audiowrite(yGsc, 16000, 16, [Path.enhGsc sem '/' uname '.wav']);                 
             
             
             %for bss

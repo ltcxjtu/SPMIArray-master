@@ -79,12 +79,11 @@ Xcor = mean(XX, 4);
 % Load context (up to 5 s immediately preceding the utterance)
 % noise = read_context(nchan, c_ind, Path, mode, mat, real_mat, uttInd, cmax, cmin);            
 softmask = cGaussMask(ftbin,Nsource,XX,EMITERNUM);
-Ncor = bsxfun(@rdivide, mean(bsxfun(@times, XX, ...
-    permute(softmask(:,:,2),[3,4,1,2])),4),permute(mean(softmask(:,:,2),2), [2,3,1]));                       
+Ncor = bsxfun(@rdivide, mean(bsxfun(@times, XX, permute(softmask(:,:,2),[3,4,1,2])),4),permute(mean(softmask(:,:,2),2), [2,3,1]));                       
 Gcor = Xcor - Ncor;
 Y = MVDR_EV(ftbin, Gcor, Ncor);
 %for bssMvdrEg
 yBssMvdrEgFt = MVDR_EV(ftbin, Gcor, Ncor);
 yBssMvdrEg = ISTFT(yBssMvdrEgFt,Lwindow,overlap);
 yBssMvdrEg = yBssMvdrEg / max(abs(yBssMvdrEg));
-audiowrite([dirn firname  'yBssMvdrEg' '.wav'],yBssMvdrEg, 16000);
+audiowrite(yBssMvdrRtf, 16000, 16, [[dirn firname '/' uname '.wav']);
