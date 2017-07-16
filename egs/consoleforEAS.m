@@ -105,3 +105,5 @@ yBssMvdrEg = ISTFT(yBssMvdrEgFt,Lwindow,overlap);
 figure;subplot(3,1,1);plot(x(:,1));
 subplot(3,1,2);plot(yDelaySum);
 subplot(3,1,3);plot(yBssMvdrEg);
+ audiowrite([dirn filename  'yBssMvdrEg' '.wav'],yBssMvdrEg, 16000);
+ 
