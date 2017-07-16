@@ -2,7 +2,7 @@
 % This software is distributed under the terms of the GNU Public License
 % version 3 (http://www.gnu.org/licenses/gpl.txt)
 
-function Y = MVDR_EV(ftbin, Gcor, Ncor)
+function [Y,Df] = MVDR_EV(ftbin, Gcor, Ncor)
     [Nchan,Nbin,~] = size(ftbin);
     Df = zeros(Nchan, Nbin);
     NcorInv = zeros(Nchan,Nchan,Nbin);

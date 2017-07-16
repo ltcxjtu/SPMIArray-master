@@ -47,9 +47,11 @@ for EMiter = 1:EMITERNUM
     exc = coeff + ex;
     %for calculate cost
     %ct = exc;
+    % just to make the caculate more robust
     exc = bsxfun(@minus, exc, max(exc,[],3)); 
+    %
     softmask = bsxfun(@rdivide, exp(exc), sum(exp(exc), 3));
-
+    %(speech prob + noise prob = 1)
     %calculate cost to ensure converge
     %tt = ct .* softmask;
     %cost = sum(tt(:))   

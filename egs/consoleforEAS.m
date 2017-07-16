@@ -54,11 +54,10 @@ for j=1:mySphere.SPHERE_NUMBERPOINTS
     end    
 end
 
-dirn='D:\out16k\midata\';
-filename = 'box3_W_C_OW_brfw_135_m_76_20170614171227_01.wav';
+dirn='C:\Users\mi\Desktop\';
+filename = 'person1_scene1_music1_level1_angle2_noise6_SNR-5dB_01.wav';
  xsize = size(audioread([dirn filename]));
  x = audioread([dirn filename]);
- x = x(321:end,:);
                   
 [ftbin,Nframe,Nbin,Lspeech] =  STFT(x, Lwindow, overlap, Nfft);   
 % for GSC fixed beamformer
@@ -91,12 +90,18 @@ for j=1:mySphere.SPHERE_NUMBERPOINTS
 end
 
 % plot the sphere;
-scatter3(Pmatch(:,1),Pmatch(:,2),Pmatch(:,3),256,Pmatch(:,4));
+figure;scatter3(Pmatch(:,1),Pmatch(:,2),Pmatch(:,3),256,Pmatch(:,4));
 
 %
 
+%delaySum;
+yDelaySumFt = delaySum(ftbin,Df);
+yDelaySum = ISTFT(yDelaySumFt,Lwindow,overlap);
 
 yBssMvdrEgFt = MVDR_EV(ftbin, Gcor, Ncor);
 yBssMvdrEg = ISTFT(yBssMvdrEgFt,Lwindow,overlap);
-% yBssMvdrEg = yBssMvdrEg / max(abs(yBssMvdrEg));
-audiowrite([dirn filename  'yBssMvdrEg' '.wav'],yBssMvdrEg, 16000);
+% % yBssMvdrEg = yBssMvdrEg / max(abs(yBssMvdrEg));
+% audiowrite([dirn filename  'yBssMvdrEg' '.wav'],yBssMvdrEg, 16000);
+figure;subplot(3,1,1);plot(x(:,1));
+subplot(3,1,2);plot(yDelaySum);
+subplot(3,1,3);plot(yBssMvdrEg);
