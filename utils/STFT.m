@@ -4,7 +4,7 @@
 
 function [ftbin,Nframe,Nbin,Lspeech,speechFrame] =  STFT(x, Lwindow, overlap, Nfft)
 %ftbin : nchan * nbin * nframe 
-
+%
 %separate frame
 [lgth,Nchan] = size(x);
 Loverlap = Lwindow * overlap;
