@@ -43,7 +43,7 @@ num_Fbin = round(Lwindow/2)+1;
 waveSpeed=343;
 steerVec=zeros(Nchan,num_Fbin,mySphere.SPHERE_NUMBERPOINTS);
 
-%get the steering vector;
+%get the steering vector template;
 for j=1:mySphere.SPHERE_NUMBERPOINTS
     delay = sqrt(sum((mySphere.spherePoints(j,:)-micPosition).*...
     (mySphere.spherePoints(j,:)-micPosition),2))/waveSpeed;%broadcast
@@ -55,72 +55,72 @@ for j=1:mySphere.SPHERE_NUMBERPOINTS
 end
 
 dirn='D:\out16k\out16kdata\';
+dirnsave='D:\out16k\out16kdoa\';
 filename = dir(dirn);
 
 for indexFile = 1:length(filename)
-    if exist(filename(indexFile).name,'file')
-        continue;
-    end
-     data = audioread([dirn filename(indexFile).name]);
-     xsize = size(data);
-     
-     % segment data to get DOA by mask
-     len_Batch = 4096/2;
-     batch_OverLap = 0.5;
-     number_Lwin = round(xsize(1)/(Lwindow*(1-overlap)));
-     angleSet = zeros(number_Lwin-30,1);
-     for Index = 1:number_Lwin-30
-        try
-             x = data(1+(Index-1)*Lwindow*(1-overlap)...
-                     :len_Batch+(Index-1)*Lwindow*(1-overlap),:);
-            [ftbin,Nframe,Nbin,Lspeech] =  STFT(x, Lwindow, overlap, Nfft);   
-
-            % correlation of X
-            XX = bsxfun(@times, permute(ftbin,[1,4,2,3]), conj(permute(ftbin,[4,1,2,3])));
-
-            Xcor = mean(XX, 4);
-            softmask = cGaussMask(ftbin,Nsource,XX,EMITERNUM);
-            Ncor = bsxfun(@rdivide, mean(bsxfun(@times, XX, ...
-                permute(softmask(:,:,2),[3,4,1,2])),4),permute(mean(softmask(:,:,2),2), [2,3,1]));                       
-            Gcor = Xcor - Ncor;
-
-            %match_values of SpherePoints; 
-            Pmatch=zeros(mySphere.SPHERE_NUMBERPOINTS,4);
-            Pmatch(:,1:3) = mySphere.spherePoints;
-
-            % get the steering vector which is estimated by time-freq mask,
-            % meanwhile the time-freq mask is estimated by CGMM;
-            [Y,Df] = MVDR_EV(ftbin, Gcor, Ncor);
-
-            % template match
-            for j=1:mySphere.SPHERE_NUMBERPOINTS
-                    Pmatch(j,4) = sum(sum((Df.*conj(permute(steerVec(:,:,j),[1,2])))).*...
-                    conj(sum(Df.*conj(permute(steerVec(:,:,j),[1,2])))));
-            end
-
-            % plot the sphere;
-            %scatter3(Pmatch(:,1),Pmatch(:,2),Pmatch(:,3),256,Pmatch(:,4));
-
-            %find the DOA from Spherepoints
-            index = find(Pmatch(:,4) == max(Pmatch(:,4)));
-            bestPoint = mySphere.spherePoints(index,:);
-            angle = atan(abs(bestPoint(2)/bestPoint(1)))*180/pi;
-            if bestPoint(1) < 0 &&bestPoint(2) < 0
-                angle = -angle-90;
-            end
-            if bestPoint(1) < 0 &&bestPoint(2) > 0
-                angle = angle+90;
-            end
-            if bestPoint(1) > 0 &&bestPoint(2) < 0
-                angle = -angle;
-            end
-            angleSet(Index) = angle;
-        %     fprintf('angle:%f\n',angle);    
+    try
+        if exist(filename(indexFile).name,'file')
+            continue;
         end
-        continue;
-     end
-     save([dirn filename(indexFile).name num2str(len_Batch) '.mat'],'angleSet');
- end
+         data = audioread([dirn filename(indexFile).name]);
+         xsize = size(data);
+
+         % segment data to get DOA by mask
+         len_Batch = 4096/2;
+         number_Lwin = round(xsize(1)/(Lwindow*(1-overlap)));
+         angleSet = zeros(number_Lwin-30,1);
+         for Index = 1:number_Lwin-30
+                 x = data(1+(Index-1)*Lwindow*(1-overlap)...
+                         :len_Batch+(Index-1)*Lwindow*(1-overlap),:);
+                [ftbin,Nframe,Nbin,Lspeech] =  STFT(x, Lwindow, overlap, Nfft);   
+
+                % correlation of X
+                XX = bsxfun(@times, permute(ftbin,[1,4,2,3]), conj(permute(ftbin,[4,1,2,3])));
+
+                Xcor = mean(XX, 4);
+                softmask = cGaussMask(ftbin,Nsource,XX,EMITERNUM);
+                Ncor = bsxfun(@rdivide, mean(bsxfun(@times, XX, ...
+                    permute(softmask(:,:,2),[3,4,1,2])),4),permute(mean(softmask(:,:,2),2), [2,3,1]));                       
+                Gcor = Xcor - Ncor;
+
+                %match_values of SpherePoints; 
+                Pmatch=zeros(mySphere.SPHERE_NUMBERPOINTS,4);
+                Pmatch(:,1:3) = mySphere.spherePoints;
+
+                % get the steering vector which is estimated by time-freq mask,
+                % meanwhile the time-freq mask is estimated by CGMM;
+                [Y,Df] = MVDR_EV(ftbin, Gcor, Ncor);
+
+                % template match
+                for j=1:mySphere.SPHERE_NUMBERPOINTS
+                        Pmatch(j,4) = sum(sum((Df.*conj(permute(steerVec(:,:,j),[1,2])))).*...
+                        conj(sum(Df.*conj(permute(steerVec(:,:,j),[1,2])))));
+                end
+
+                % plot the sphere;
+                %scatter3(Pmatch(:,1),Pmatch(:,2),Pmatch(:,3),256,Pmatch(:,4));
+
+                %find the DOA from Spherepoints
+                index = find(Pmatch(:,4) == max(Pmatch(:,4)));
+                bestPoint = mySphere.spherePoints(index,:);
+                angle = atan(abs(bestPoint(2)/bestPoint(1)))*180/pi;
+                if bestPoint(1) < 0 &&bestPoint(2) < 0
+                    angle =-(180-angle);
+                end
+                if bestPoint(1) < 0 &&bestPoint(2) > 0
+                    angle = 180-angle;
+                end
+                if bestPoint(1) > 0 &&bestPoint(2) < 0
+                    angle = -angle;
+                end
+                angleSet(Index) = angle;
+            %     fprintf('angle:%f\n',angle);    
+         end
+    save([dirnsave filename(indexFile).name num2str(len_Batch) '.mat'],'angleSet');
+    end
+    continue;
+end
 
 
 

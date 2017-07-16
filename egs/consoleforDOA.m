@@ -57,9 +57,11 @@ for j=1:mySphere.SPHERE_NUMBERPOINTS
 end
 
 dirn='./data/';
-filename = 'person1_scene1_music1_level1_angle2_noise7_SNR15dB.wav';
- xsize = size(audioread([dirn filename]));
- data = audioread([dirn filename]);
+filename = 'box3_W_C_OW_brfw_135_m_76_20170614171227.pcm';
+outfilename = 'box3_W_C_OW_brfw_135_m_76_20170614171227.wav';
+pcm2wav(filename, outfile);
+ xsize = size(audioread([dirn outfilename]));
+ data = audioread([dirn outfilename]);
  
  % segment data to get DOA by mask
  len_Batch = 1024*4;
@@ -103,10 +105,10 @@ filename = 'person1_scene1_music1_level1_angle2_noise7_SNR15dB.wav';
         bestPoint = mySphere.spherePoints(index,:);
         angle = atan(abs(bestPoint(2)/bestPoint(1)))*180/pi;
         if bestPoint(1) < 0 &&bestPoint(2) < 0
-            angle = -angle-90;
+            angle =-(180-angle);
         end
         if bestPoint(1) < 0 &&bestPoint(2) > 0
-            angle = angle+90;
+            angle = 180-angle;
         end
         if bestPoint(1) > 0 &&bestPoint(2) < 0
             angle = -angle;
