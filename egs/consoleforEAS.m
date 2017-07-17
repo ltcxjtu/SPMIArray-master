@@ -54,8 +54,8 @@ for j=1:mySphere.SPHERE_NUMBERPOINTS
     end    
 end
 
-dirn='C:\Users\mi\Desktop\';
-filename = 'person1_scene1_music1_level1_angle2_noise6_SNR-5dB_01.wav';
+dirn='D:\out16k\midata-time-freq-mask-beamforming\';
+filename = 'person2_scene1_music1_level1_angle3_noise9_SNR-5dB_01.wav';
  xsize = size(audioread([dirn filename]));
  x = audioread([dirn filename]);
                   
@@ -94,16 +94,29 @@ figure;scatter3(Pmatch(:,1),Pmatch(:,2),Pmatch(:,3),256,Pmatch(:,4));
 
 %
 
-%delaySum;
-yDelaySumFt = delaySum(ftbin,Df);
-yDelaySum = ISTFT(yDelaySumFt,Lwindow,overlap);
-
+%delaySum use the Df;
+yDelaySumDfFt = delaySum(ftbin,Df);
+yDelaySumDf = ISTFT(yDelaySumDfFt,Lwindow,overlap);
+yDelaySumDf = yDelaySumDf/max(abs(yDelaySumDf));
+%delay Sum use the DOA got by match template
+index = find(Pmatch(:,4) == max(Pmatch(:,4)));
+bestSteerVec = steerVec(:,:,index);
+yDelaySumDoaFt = delaySum(ftbin,bestSteerVec/6);
+yDelaySumDoa = real(ISTFT(yDelaySumDoaFt,Lwindow,overlap));
+yDelaySumDoa = yDelaySumDoa/max(abs(yDelaySumDoa));
+% beamforming by MVDR
 yBssMvdrEgFt = MVDR_EV(ftbin, Gcor, Ncor);
 yBssMvdrEg = ISTFT(yBssMvdrEgFt,Lwindow,overlap);
-% % yBssMvdrEg = yBssMvdrEg / max(abs(yBssMvdrEg));
+yBssMvdrEg = yBssMvdrEg / max(abs(yBssMvdrEg));
 % audiowrite([dirn filename  'yBssMvdrEg' '.wav'],yBssMvdrEg, 16000);
-figure;subplot(3,1,1);plot(x(:,1));
-subplot(3,1,2);plot(yDelaySum);
-subplot(3,1,3);plot(yBssMvdrEg);
- audiowrite([dirn filename  'yBssMvdrEg' '.wav'],yBssMvdrEg, 16000);
+figure;subplot(4,1,1);plot(x(:,1)/max(abs(x(:,1))));title('原始信号-离线结果');
+subplot(4,1,2);plot(yDelaySumDf);title('DelaySum+steering Vector');
+subplot(4,1,3);plot(yDelaySumDoa);title('DelaySum+steering Vector match DOA');
+subplot(4,1,4);plot(yBssMvdrEg);title('MVDR+steering Vector');
+
+audiowrite([dirn filename  'x' '.wav'],x(:,1)/max(abs(x(:,1))), 16000);
+audiowrite([dirn filename  'yDelaySumDf' '.wav'],x(:,1)/max(abs(x(:,1))), 16000);
+audiowrite([dirn filename  'yDelaySumDf' '.wav'],yDelaySumDf, 16000);
+audiowrite([dirn filename  'yDelaySumDoa' '.wav'],yDelaySumDoa, 16000);
+audiowrite([dirn filename  'yBssMvdrEg' '.wav'],yBssMvdrEg, 16000);
  
